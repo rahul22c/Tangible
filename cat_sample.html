@@ -1,0 +1,148 @@
+
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script src="http://js.leapmotion.com/leap-0.6.3.js"></script>
+<script src="http://js.leapmotion.com/leap-plugins-0.1.8.js"></script>
+        <body>
+
+<script>
+//var cats = {};
+var controllerOptions = {enableGestures: true};
+    
+
+Leap.loop(controllerOptions, function(frame) {
+
+ /* frame.hands.forEach(function(hand, index) {
+    
+    var cat = ( cats[index] || (cats[index] = new Cat()) );    
+    cat.setTransform(hand.screenPosition(), hand.roll());
+    
+  });
+  
+}).use('screenPosition', {scale: 0.25});
+
+
+var Cat = function() {
+  var cat = this;
+  var img = document.createElement('img');
+  img.src = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/109794/cat_2.png';
+  img.style.position = 'absolute';
+  img.onload = function () {
+    cat.setTransform([window.innerWidth/2,window.innerHeight/2], 0);
+    document.body.appendChild(img);
+  }
+  
+  cat.setTransform = function(position, rotation) {
+
+    img.style.left = position[0] - img.width  / 2 + 'px';
+    img.style.top  = position[1] - img.height / 2 + 'px';
+
+    img.style.transform = 'rotate(' + -rotation + 'rad)';
+    
+    img.style.webkitTransform = img.style.MozTransform = img.style.msTransform =
+    img.style.OTransform = img.style.transform;
+
+  };*/
+    var previousFrame = null;
+var paused = false;
+var pauseOnGesture = false;
+
+    var frameOutput = document.getElementById("frameData");
+
+  var frameString = "Frame ID: " + frame.id  + "<br />"
+                  + "Timestamp: " + frame.timestamp + " &micro;s<br />"
+                  + "Hands: " + frame.hands.length + "<br />"
+                  + "Fingers: " + frame.fingers.length + "<br />"
+                  + "Tools: " + frame.tools.length + "<br />"
+                  + "Gestures: " + frame.gestures.length + "<br />";
+
+  // Frame motion factors
+  if (previousFrame && previousFrame.valid) {
+    var translation = frame.translation(previousFrame);
+    frameString += "Translation: " + vectorToString(translation) + " mm <br />";
+
+    var rotationAxis = frame.rotationAxis(previousFrame);
+    var rotationAngle = frame.rotationAngle(previousFrame);
+    frameString += "Rotation axis: " + vectorToString(rotationAxis, 2) + "<br />";
+    frameString += "Rotation angle: " + rotationAngle.toFixed(2) + " radians<br />";
+
+    var scaleFactor = frame.scaleFactor(previousFrame);
+    frameString += "Scale factor: " + scaleFactor.toFixed(2) + "<br />";
+  }
+  frameOutput.innerHTML = "<div style='width:300px; float:left; padding:5px'>" + frameString + "</div>";
+
+    
+    var gestureOutput = document.getElementById("gestureData");
+    var gestureString ="a" + frame.gestures.length + "<br/>" ;
+    //gestureOutput.innerHTML = gestureString;
+ if (frame.gestures.length > 0) {
+  
+    for (var i = 0; i < frame.gestures.length; i++) {
+       
+      var gesture = frame.gestures[i];
+        
+      gestureString += "Gesture ID: " + gesture.id + ", "
+                    + "type: " + gesture.type + ", "
+                    + "state: " + gesture.state + ", "
+                    + "hand IDs: " + gesture.handIds.join(", ") + ", "
+                    + "pointable IDs: " + gesture.pointableIds.join(", ") + ", "
+                    + "duration: " + gesture.duration + " &micro;s, ";
+         
+         
+      switch (gesture.type) {
+        case "circle":
+          gestureString += "center: " + vectorToString(gesture.center) + " mm, "
+                        + "normal: " + vectorToString(gesture.normal, 2) + ", "
+                        + "radius: " + gesture.radius.toFixed(1) + " mm, "
+                        + "progress: " + gesture.progress.toFixed(2) + " rotations";
+             
+          break;
+                
+        case "swipe":
+          gestureString += "start position: " + vectorToString(gesture.startPosition) + " mm, "
+                        + "current position: " + vectorToString(gesture.position) + " mm, "
+                        + "direction: " + vectorToString(gesture.direction, 1) + ", "
+                        + "speed: " + gesture.speed.toFixed(1) + " mm/s";
+          break;
+        case "screenTap":
+        case "keyTap":
+          gestureString += "position: " + vectorToString(gesture.position) + " mm";
+          break;
+        default:
+          gestureString += "unkown gesture type";
+      }
+      gestureString += "<br />";
+    }
+ }
+  else {
+    gestureString += "No gestures";
+  }
+  
+gestureOutput.innerHTML = gestureString;
+  // Store frame for motion functions
+})
+function vectorToString(vector, digits) {
+  if (typeof digits === "undefined") {
+    digits = 1;
+  }
+  return "(" + vector[0].toFixed(digits) + ", "
+             + vector[1].toFixed(digits) + ", "
+             + vector[2].toFixed(digits) + ")";
+}
+
+
+
+//cats[0] = new Cat();
+
+// This allows us to move the cat even whilst in an iFrame.
+
+</script>
+  <h1>Leap Motion JavaScript Sample</h1>          
+  <div id="main">
+  <h3>Frame data:</h3>
+  <div id="frameData"></div>
+  <h3>Gesture data:</h3>
+  <div id="gestureData"></div>
+</div>
+            </body>
+    </html>
